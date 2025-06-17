@@ -313,7 +313,7 @@ Polygon_with_holes_2 geomutils::exact_poly_to_poly(const CGAL::Polygon_with_hole
     return convertedPoly;
 }
 
-bool geomutils::is_large_ground_hole(Mesh::halfedge_index h,Mesh& mesh, CGAL::Bbox_2 polyBbox) {
+bool geomutils::is_large_ground_hole(const Mesh::halfedge_index h, const Mesh& mesh, CGAL::Bbox_2 polyBbox) {
     CGAL::Bbox_3 hole_bbox;
     for (Mesh::halfedge_index hc : CGAL::halfedges_around_face(h, mesh)) {
         const Mesh::Point& p = mesh.point(target(hc, mesh));
