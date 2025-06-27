@@ -35,6 +35,7 @@
 #include "val3dity/src/val3dity.h"
 #include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 #include <CGAL/Polygon_mesh_processing/polygon_mesh_to_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/compute_normal.h>
 
 ReconstructedBuilding::ReconstructedBuilding()
         : Building(), m_attributeHeight(-global::largnum),
@@ -230,9 +231,7 @@ void ReconstructedBuilding::reconstruct() {
                 // fill using boundary halfedges
                 for(halfedge_descriptor h : borderCycles) {
                     // don't triangulate the removed bottom in case of remove_bottom
-                    // assumption here that there are no larger holes in the mesh than the footprint
-                    if (Config::get().removeBottom
-                        && geomutils::is_large_ground_hole(h, mesh, m_poly.bbox())) continue;
+                    if (Config::get().removeBottom && this->is_bottom_surface(mesh, h)) continue;
                     // triangulate other holes
                     PMP::triangulate_hole(mesh, h);
                 }
@@ -384,4 +383,24 @@ bool ReconstructedBuilding::reconstruct_again_from_attribute(const std::string& 
     } else {
         return false;
     }
+}
+
+bool ReconstructedBuilding::is_bottom_surface(const Mesh& mesh, const Mesh::halfedge_index h) {
+    Mesh tempMesh;
+    std::vector<Mesh::vertex_index> tempVertices;
+    // gather vertices from the halfedges around the (missing) face
+    for (Mesh::halfedge_index hc : CGAL::halfedges_around_face(h, mesh)) {
+        auto vertex = tempMesh.add_vertex(mesh.point(target(hc, mesh)));
+        tempVertices.push_back(vertex);
+    }
+
+    // create face from halfedges
+    auto face = tempMesh.add_face(tempVertices);
+    // calculate face normal
+    auto normal = CGAL::Polygon_mesh_processing::compute_face_normal(face, tempMesh);
+    // ground has a downward facing normal, but holes also get detected as open boundaries
+    // It is necessray to acocunt for the holes as well (almost vertical normal)
+    if (normal.z() < -0.1 || normal.z() > 0.9) return true;
+
+    return false;
 }
