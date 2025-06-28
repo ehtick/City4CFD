@@ -244,7 +244,7 @@ void ReconstructedBuilding::reconstruct() {
 
                 auto validity = val3dity::validate(points, polys);
                 if (!validity["validity"]) {
-                    std::string valdtyReport = "Invalid geometry, errors: " + nlohmann::to_string(validity["all_errors"]);
+                    std::string valdtyReport = " Invalid geometry, errors: " + nlohmann::to_string(validity["all_errors"]);
                     if (m_reconSettings->enforceValidity.empty()) {
                         Config::write_to_log("Building ID: " + this->get_id()
                                              + valdtyReport);
