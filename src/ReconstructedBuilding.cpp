@@ -35,6 +35,7 @@
 #include "val3dity/src/val3dity.h"
 #include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 #include <CGAL/Polygon_mesh_processing/polygon_mesh_to_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/compute_normal.h>
 
 ReconstructedBuilding::ReconstructedBuilding()
         : Building(), m_attributeHeight(-global::largnum),
@@ -155,11 +156,6 @@ void ReconstructedBuilding::calc_elevation() {
 void ReconstructedBuilding::reconstruct() {
     m_mesh.clear();
     assert(m_reconSettings);
-    auto origGroundElevations = m_groundElevations;
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        m_groundElevations = this->translate_footprint_to_intersect(-5);
-    }
-
     //-- Check if reconstructing from height attribute takes precedence
     if (m_attributeHeightAdvantage) {
         this->reconstruct_from_attribute();
@@ -286,10 +282,10 @@ void ReconstructedBuilding::reconstruct() {
         this->reconstruct_lod12();
     }
 
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-//        m_groundElevations = origGroundElevations; // restore original ground elevations
-    }
     if (Config::get().refineReconstructed) this->refine();
+    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
+        this->force_building_terrain_intersection(5);
+    }
 }
 
 void ReconstructedBuilding::reconstruct_lod12() {
@@ -314,16 +310,11 @@ const std::vector<roofer::Mesh>& ReconstructedBuilding::get_roofer_meshes() cons
 
 void ReconstructedBuilding::reconstruct_flat_terrain() {
     m_mesh.clear();
-    auto origGroundElevations = m_groundElevations;
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        m_groundElevations = this->translate_footprint_to_intersect(-5);
-    }
-    // the new height was previously calculated
     LoD12 lod12HeightAttribute(m_poly, m_groundElevations, this->get_elevation());
     lod12HeightAttribute.reconstruct(m_mesh);
 
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        m_groundElevations = origGroundElevations; // restore original ground elevations
+        this->force_building_terrain_intersection(5);
     }
 }
 
@@ -369,6 +360,10 @@ void ReconstructedBuilding::reconstruct_from_attribute() {
     }
     LoD12 lod12HeightAttribute(m_poly, m_groundElevations, m_elevation);
     lod12HeightAttribute.reconstruct(m_mesh);
+
+    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
+        this->force_building_terrain_intersection(5);
+    }
 }
 
 bool ReconstructedBuilding::reconstruct_again_from_attribute(const std::string& reason) {

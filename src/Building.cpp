@@ -194,35 +194,29 @@ void Building::alpha_wrap(double relativeAlpha, double relativeOffset) {
 }
 
 /*
- * Flatten the footprint and ensure it extends through the ground
+ * Ensure that mesh extrudes through the ground
  */
-std::vector<std::vector<double>> Building::translate_footprint_to_intersect(const double h) {
-    if (m_groundElevations.empty()) {
-        throw city4cfd_error("Building " + m_id + " has no ground elevations set. Cannot translate footprint.");
-    }
-    // Find the lowest point of the footprint
-    double minElev = global::largnum;
-    for (const auto& ring : m_groundElevations) {
-        for (const auto& pt : ring) {
-            if (pt < minElev) {
-                minElev = pt;
+void Building::force_building_terrain_intersection(const double h) {
+    double minElevation = global::largnum;
+    std::unordered_set<vertex_descriptor> bottomVertices; // store vertex indices ones
+    for (const auto f : m_mesh.faces()) {
+        auto normal = PMP::compute_face_normal(f, m_mesh);
+        if (normal.z() < - 0.1) { // look at downward-facing faces
+            // store the vertices and calculate min point height
+            for (const auto v : m_mesh.vertices_around_face(m_mesh.halfedge(f))) {
+                bottomVertices.insert(v);
+                auto pt = m_mesh.point(v);
+                if (pt.z() < minElevation) {
+                    minElevation = pt.z();
+                }
             }
         }
     }
-    // Set the elevation to the lowest point minus h
-    double newElev = minElev - h;
-    std::vector<std::vector<double>> elevationTransform = {};
-    elevationTransform.reserve(m_groundElevations.size());
-    for (auto& ring : m_groundElevations) {
-        std::vector<double> ringElevations;
-        ringElevations.reserve(ring.size());
-        for (auto& pt : ring) {
-            pt = newElev; // set the new elevation
-            ringElevations.emplace_back(pt);
-        }
-        elevationTransform.emplace_back(ringElevations);
+    // set the elevation of ground vertices to the lowest point minus distance
+    for (const auto v : bottomVertices) {
+        auto pt = m_mesh.point(v);
+        m_mesh.point(v) = Point_3(pt.x(), pt.y(), minElevation - h);
     }
-    return elevationTransform;
 }
 
 /*
