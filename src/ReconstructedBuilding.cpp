@@ -155,8 +155,9 @@ void ReconstructedBuilding::calc_elevation() {
 void ReconstructedBuilding::reconstruct() {
     m_mesh.clear();
     assert(m_reconSettings);
+    auto origGroundElevations = m_groundElevations;
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(-5);
+        m_groundElevations = this->translate_footprint_to_intersect(-5);
     }
 
     //-- Check if reconstructing from height attribute takes precedence
@@ -257,7 +258,7 @@ void ReconstructedBuilding::reconstruct() {
                 }
             }
             // get the new footprint and elevations
-            m_groundElevations = lod22.get_base_elevations();
+            m_groundElevations = lod22.get_base_elevations(); // elevations should not change for now
             m_poly = lod22.get_footprint();
             m_mesh = mesh;
         } catch (const std::exception& e) {
@@ -281,12 +282,12 @@ void ReconstructedBuilding::reconstruct() {
                 throw city4cfd_error("Error with reconstruction fallback!");
         }
     } else {
-        // just reconstruct LoD22
+        // just reconstruct LoD12
         this->reconstruct_lod12();
     }
 
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(5);
+//        m_groundElevations = origGroundElevations; // restore original ground elevations
     }
     if (Config::get().refineReconstructed) this->refine();
 }
@@ -313,15 +314,16 @@ const std::vector<roofer::Mesh>& ReconstructedBuilding::get_roofer_meshes() cons
 
 void ReconstructedBuilding::reconstruct_flat_terrain() {
     m_mesh.clear();
+    auto origGroundElevations = m_groundElevations;
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(-5);
+        m_groundElevations = this->translate_footprint_to_intersect(-5);
     }
     // the new height was previously calculated
     LoD12 lod12HeightAttribute(m_poly, m_groundElevations, this->get_elevation());
     lod12HeightAttribute.reconstruct(m_mesh);
 
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(5);
+        m_groundElevations = origGroundElevations; // restore original ground elevations
     }
 }
 

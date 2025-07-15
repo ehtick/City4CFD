@@ -193,22 +193,50 @@ void Building::alpha_wrap(double relativeAlpha, double relativeOffset) {
     CGAL::alpha_wrap_3(m_mesh, alpha, offset, m_mesh);
 }
 
-void Building::translate_footprint(const double h) {
-    for (auto& ring : m_groundElevations) {
-        for (auto& pt : ring) {
-            pt += h;
+/*
+ * Flatten the footprint and ensure it extends through the ground
+ */
+std::vector<std::vector<double>> Building::translate_footprint_to_intersect(const double h) {
+    if (m_groundElevations.empty()) {
+        throw city4cfd_error("Building " + m_id + " has no ground elevations set. Cannot translate footprint.");
+    }
+    // Find the lowest point of the footprint
+    double minElev = global::largnum;
+    for (const auto& ring : m_groundElevations) {
+        for (const auto& pt : ring) {
+            if (pt < minElev) {
+                minElev = pt;
+            }
         }
     }
+    // Set the elevation to the lowest point minus h
+    double newElev = minElev - h;
+    std::vector<std::vector<double>> elevationTransform = {};
+    elevationTransform.reserve(m_groundElevations.size());
+    for (auto& ring : m_groundElevations) {
+        std::vector<double> ringElevations;
+        ringElevations.reserve(ring.size());
+        for (auto& pt : ring) {
+            pt = newElev; // set the new elevation
+            ringElevations.emplace_back(pt);
+        }
+        elevationTransform.emplace_back(ringElevations);
+    }
+    return elevationTransform;
 }
 
-// Store the reconstruction settings for a defined reconstruction (influence) region
+/*
+ * Store the reconstruction settings for a defined reconstruction (influence) region
+*/
 void Building::set_reconstruction_rules(const BoundingRegion& reconRegion) {
     m_reconSettings = reconRegion.m_reconSettings;
     // set the output layer ID
     m_outputLayerID = m_reconSettings->outputLayerID;
 }
 
-// Remove stored reconstruction settings
+/*
+ * Remove stored reconstruction settings
+*/
 void Building::remove_reconstruction_rules() {
     m_reconSettings.reset();
     m_outputLayerID = 0;

@@ -52,7 +52,7 @@ public:
     void   clip_bottom(const TerrainPtr& terrain);
     void   refine();
     void   alpha_wrap(double relativeAlpha, double relativeOffset);
-    void   translate_footprint(const double h);
+    std::vector<std::vector<double>> translate_footprint_to_intersect(const double h = -10.);
     bool   is_part_of(const Polygon_2& otherPoly) const;
     void   set_reconstruction_rules(const BoundingRegion& reconRegion);
     void   remove_reconstruction_rules();

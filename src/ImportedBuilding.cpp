@@ -291,8 +291,9 @@ void ImportedBuilding::reconstruct() {
     nlohmann::json& geometry = (*m_buildingJson)["geometry"][m_lodIdx];
 
     m_mesh.clear();
+    auto origGroundElevations =  m_groundElevations;
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(-5);
+        m_groundElevations = this->translate_footprint_to_intersect(-5);
     }
     //-- Adjust building height points
     if (!m_trueHeight || Config::get().ground_xyz.empty()) {
@@ -373,7 +374,7 @@ void ImportedBuilding::reconstruct() {
      */
 
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(5);
+        m_groundElevations = origGroundElevations; // restore original ground elevations
     }
         /*
         //-- Add other surfaces
