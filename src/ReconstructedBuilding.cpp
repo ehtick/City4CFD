@@ -254,7 +254,7 @@ void ReconstructedBuilding::reconstruct() {
                 }
             }
             // get the new footprint and elevations
-            m_groundElevations = lod22.get_base_elevations(); // elevations should not change for now
+            m_groundElevations = lod22.get_base_elevations();
             m_poly = lod22.get_footprint();
             m_mesh = mesh;
         } catch (const std::exception& e) {
