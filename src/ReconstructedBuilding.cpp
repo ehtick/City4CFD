@@ -35,6 +35,7 @@
 #include "val3dity/src/val3dity.h"
 #include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 #include <CGAL/Polygon_mesh_processing/polygon_mesh_to_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/compute_normal.h>
 
 ReconstructedBuilding::ReconstructedBuilding()
         : Building(), m_attributeHeight(-global::largnum),
@@ -228,8 +229,12 @@ void ReconstructedBuilding::reconstruct() {
                 std::vector<halfedge_descriptor> borderCycles;
                 PMP::extract_boundary_cycles(mesh, std::back_inserter(borderCycles));
                 // fill using boundary halfedges
-                for(halfedge_descriptor h : borderCycles)
+                for(halfedge_descriptor h : borderCycles) {
+                    // don't triangulate the removed bottom in case of remove_bottom
+                    if (Config::get().removeBottom && this->is_bottom_surface(mesh, h)) continue;
+                    // triangulate other holes
                     PMP::triangulate_hole(mesh, h);
+                }
             }
             //-- Validity check
             if (m_reconSettings->validate) {
@@ -239,7 +244,7 @@ void ReconstructedBuilding::reconstruct() {
 
                 auto validity = val3dity::validate(points, polys);
                 if (!validity["validity"]) {
-                    std::string valdtyReport = "Invalid geometry, errors: " + nlohmann::to_string(validity["all_errors"]);
+                    std::string valdtyReport = " Invalid geometry, errors: " + nlohmann::to_string(validity["all_errors"]);
                     if (m_reconSettings->enforceValidity.empty()) {
                         Config::write_to_log("Building ID: " + this->get_id()
                                              + valdtyReport);
@@ -378,4 +383,24 @@ bool ReconstructedBuilding::reconstruct_again_from_attribute(const std::string& 
     } else {
         return false;
     }
+}
+
+bool ReconstructedBuilding::is_bottom_surface(const Mesh& mesh, const Mesh::halfedge_index h) {
+    Mesh tempMesh;
+    std::vector<Mesh::vertex_index> tempVertices;
+    // gather vertices from the halfedges around the (missing) face
+    for (Mesh::halfedge_index hc : CGAL::halfedges_around_face(h, mesh)) {
+        auto vertex = tempMesh.add_vertex(mesh.point(target(hc, mesh)));
+        tempVertices.push_back(vertex);
+    }
+
+    // create face from halfedges
+    auto face = tempMesh.add_face(tempVertices);
+    // calculate face normal
+    auto normal = CGAL::Polygon_mesh_processing::compute_face_normal(face, tempMesh);
+    // ground has a downward facing normal, but holes also get detected as open boundaries
+    // It is necessray to acocunt for the holes as well (almost vertical normal)
+    if (normal.z() < -0.1 || normal.z() > 0.9) return true;
+
+    return false;
 }
