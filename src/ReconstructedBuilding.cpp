@@ -156,10 +156,6 @@ void ReconstructedBuilding::calc_elevation() {
 void ReconstructedBuilding::reconstruct() {
     m_mesh.clear();
     assert(m_reconSettings);
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(-5);
-    }
-
     //-- Check if reconstructing from height attribute takes precedence
     if (m_attributeHeightAdvantage) {
         this->reconstruct_from_attribute();
@@ -286,14 +282,14 @@ void ReconstructedBuilding::reconstruct() {
                 throw city4cfd_error("Error with reconstruction fallback!");
         }
     } else {
-        // just reconstruct LoD22
+        // just reconstruct LoD12
         this->reconstruct_lod12();
     }
 
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(5);
-    }
     if (Config::get().refineReconstructed) this->refine();
+    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
+        this->force_building_terrain_intersection(5);
+    }
 }
 
 void ReconstructedBuilding::reconstruct_lod12() {
@@ -318,15 +314,11 @@ const std::vector<roofer::Mesh>& ReconstructedBuilding::get_roofer_meshes() cons
 
 void ReconstructedBuilding::reconstruct_flat_terrain() {
     m_mesh.clear();
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(-5);
-    }
-    // the new height was previously calculated
     LoD12 lod12HeightAttribute(m_poly, m_groundElevations, this->get_elevation());
     lod12HeightAttribute.reconstruct(m_mesh);
 
     if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(5);
+        this->force_building_terrain_intersection(5);
     }
 }
 
@@ -372,6 +364,10 @@ void ReconstructedBuilding::reconstruct_from_attribute() {
     }
     LoD12 lod12HeightAttribute(m_poly, m_groundElevations, m_elevation);
     lod12HeightAttribute.reconstruct(m_mesh);
+
+    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
+        this->force_building_terrain_intersection(5);
+    }
 }
 
 bool ReconstructedBuilding::reconstruct_again_from_attribute(const std::string& reason) {

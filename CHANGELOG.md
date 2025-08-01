@@ -5,6 +5,7 @@
 - An option to remove bottom surfaces at the terrain-building intersection
 ### Changed
 - Influence region and domain boundaries support all formats for polygon input
+- Buildings that intersect terrain now have flat footprints
 
 ## [0.6.3] 2025-03-07
 ### Fixed
