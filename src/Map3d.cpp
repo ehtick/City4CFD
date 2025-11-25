@@ -175,8 +175,8 @@ void Map3d::set_features() {
 
     //-- Set flat terrain or random thin terrain points
     if (m_pointCloud.get_terrain().empty()) {
-        m_pointCloud.create_flat_terrain(m_allFeaturesPtr);
-        Config::get().flatTerrain = false; // all points are already at 0 elevation
+        m_pointCloud.create_flat_terrain(m_allFeaturesPtr, Config::get().flatTerrainElevation);
+        Config::get().flatTerrain = false; // all points are already at flat terrain elevation
     } else {
         m_pointCloud.random_thin_pts();
     }
@@ -467,15 +467,15 @@ void Map3d::reconstruct_boundaries() {
 void Map3d::reconstruct_with_flat_terrain() {
     //-- Account for zero terrain height of surface layers
     for (auto& sl : m_surfaceLayersPtr) {
-        sl->set_zero_borders();
+        sl->set_flat_borders(Config::get().flatTerrainElevation);
     }
     //-- Account for zero terrain height of buildings
     for (auto& b : m_buildingsPtr) {
         if (!b->is_active()) continue; // skip failed reconstructions
-        b->set_to_zero_terrain();
+        b->set_to_flat_terrain(Config::get().flatTerrainElevation);
     }
     //-- Set terrain point cloud to zero height
-    m_pointCloud.set_flat_terrain();
+    m_pointCloud.set_flat_terrain(Config::get().flatTerrainElevation);
 }
 
 void Map3d::solve_building_conflicts() {

@@ -40,8 +40,8 @@ public:
     ~PointCloud() = default;
 
     void random_thin_pts();
-    void create_flat_terrain(const PolyFeaturesPtr& lsFeatures);
-    void set_flat_terrain();
+    void create_flat_terrain(const PolyFeaturesPtr& lsFeatures, const double elevation = 0.);
+    void set_flat_terrain(const double elevation = 0.);
     void smooth_terrain();
     void terrain_points_in_polygon(BuildingsPtr& features);
     void flatten_polygon_pts(const PolyFeaturesPtr& lsFeatures, std::vector<EPECK::Segment_3>& constrainedEdges,

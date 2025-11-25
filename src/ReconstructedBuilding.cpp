@@ -312,7 +312,7 @@ const std::vector<roofer::Mesh>& ReconstructedBuilding::get_roofer_meshes() cons
     return m_roofer_meshes;
 }
 
-void ReconstructedBuilding::reconstruct_flat_terrain() {
+void ReconstructedBuilding::reconstruct_with_flat_terrain(const double /* elevation */) {
     m_mesh.clear();
     LoD12 lod12HeightAttribute(m_poly, m_groundElevations, this->get_elevation());
     lod12HeightAttribute.reconstruct(m_mesh);

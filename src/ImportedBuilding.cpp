@@ -400,9 +400,9 @@ void ImportedBuilding::reconstruct() {
     }
 }
 
-void ImportedBuilding::reconstruct_flat_terrain() {
+void ImportedBuilding::reconstruct_with_flat_terrain(const double elevation) {
     m_trueHeight = false;
-    m_groundElevation = 0;
+    m_groundElevation = elevation;
     this->reconstruct();
 }
 
