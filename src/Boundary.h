@@ -40,13 +40,13 @@ public:
     static void set_bounds_to_buildings_pc(Point_set_3& pointCloud, const Polygon_2& pcBndPoly);
     static void set_bounds_to_terrain_pc(Point_set_3& pointCloud, const Polygon_2& bndPoly,
                                          const Polygon_2& pcBndPoly, const Polygon_2& startBufferPoly);
+    static void set_flat_borders(const double elevation);
     static std::vector<double> get_outer_bnd_bbox();
 
     virtual void reconstruct() = 0;
 
     void prep_output();
     void prep_output(Vector_2 edge);
-    void set_flat_borders(const double elevation);
 
     virtual TopoClass   get_class() const = 0;
     virtual std::string get_class_name() const = 0;

@@ -473,9 +473,7 @@ void Map3d::reconstruct_with_flat_terrain() {
     //-- Set terrain point cloud to zero height
     m_pointCloud.set_flat_terrain(Config::get().flatTerrainElevation);
 
-    for (auto& b : m_boundariesPtr) {
-        b->set_flat_borders(Config::get().flatTerrainElevation);
-    }
+    Boundary::set_flat_borders(Config::get().flatTerrainElevation);
 
     //-- Buildings are already reconstructed with defined elevation
 }
