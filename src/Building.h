@@ -43,7 +43,6 @@ public:
 
     virtual void   calc_elevation() = 0;
     virtual void   reconstruct() = 0;
-    virtual void   reconstruct_with_flat_terrain(const double elevation = 0.) = 0;
     virtual void   insert_terrain_point(const Point_3& pt) = 0;
 
     double get_elevation();

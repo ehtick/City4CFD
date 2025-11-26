@@ -400,12 +400,6 @@ void ImportedBuilding::reconstruct() {
     }
 }
 
-void ImportedBuilding::reconstruct_with_flat_terrain(const double elevation) {
-    m_trueHeight = false;
-    m_groundElevation = elevation;
-    this->reconstruct();
-}
-
 void ImportedBuilding::append_nonground_part(const std::shared_ptr<ImportedBuilding>& other) {
     // append json
     (*m_buildingJson)["geometry"][this->m_lodIdx]["boundaries"].front()

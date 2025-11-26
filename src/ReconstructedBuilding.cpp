@@ -312,16 +312,6 @@ const std::vector<roofer::Mesh>& ReconstructedBuilding::get_roofer_meshes() cons
     return m_roofer_meshes;
 }
 
-void ReconstructedBuilding::reconstruct_with_flat_terrain(const double /* elevation */) {
-    m_mesh.clear();
-    LoD12 lod12HeightAttribute(m_poly, m_groundElevations, this->get_elevation());
-    lod12HeightAttribute.reconstruct(m_mesh);
-
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->force_building_terrain_intersection(5);
-    }
-}
-
 void ReconstructedBuilding::get_cityjson_semantics(nlohmann::json& g) const { // Temp for checking CGAL mesh properties
     // for now handle only LoD1.2 with semantics, LoD1.3 and LoD2.2 loses information
     // when making final repairs
