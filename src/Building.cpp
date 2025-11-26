@@ -282,7 +282,7 @@ void Building::set_to_flat_terrain(const double elevation) {
         avgRings.emplace_back(geomutils::avg(ring));
     }
     const double avgElevation = geomutils::avg(avgRings);
-    m_elevation = this->get_elevation() - avgElevation;
+    m_elevation = this->get_elevation() - avgElevation + elevation;
 
     // shift every point by the defined elevation
     for (auto& pt : m_ptsPtr->points()) {
