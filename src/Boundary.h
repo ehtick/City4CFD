@@ -46,6 +46,7 @@ public:
 
     void prep_output();
     void prep_output(Vector_2 edge);
+    void set_flat_borders(const double elevation);
 
     virtual TopoClass   get_class() const = 0;
     virtual std::string get_class_name() const = 0;

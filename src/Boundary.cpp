@@ -159,6 +159,12 @@ void Boundary::prep_output(Vector_2 edge) {
     throw city4cfd_error("Cannot find side for output!");
 }
 
+void Boundary::set_flat_borders(const double elevation) {
+    for (auto& pt : m_sideOutputPts) {
+        pt = Point_3(pt.x(), pt.y(), elevation);
+    }
+}
+
 std::vector<double> Boundary::get_outer_bnd_bbox() {
     double maxx(-global::largnum), maxy(-global::largnum), maxz(-global::largnum);
     double minx(global::largnum),  miny(global::largnum),  minz(global::largnum);

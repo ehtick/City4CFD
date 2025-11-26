@@ -82,11 +82,11 @@ void Map3d::reconstruct() {
         this->set_footprint_elevation(m_surfaceLayersPtr);
     }
 
-    //-- Clip building bottoms
-    if (Config::get().clip) this->clip_buildings();
-
     //-- Flatten terrain with flag
     if (Config::get().flatTerrain) this->reconstruct_with_flat_terrain();
+
+    //-- Clip building bottoms
+    if (Config::get().clip) this->clip_buildings();
 
     //-- Constrain features, generate terrain mesh from CDT
     this->reconstruct_terrain();
@@ -380,6 +380,7 @@ void Map3d::reconstruct_buildings() {
     for (int i = 0; i < m_buildingsPtr.size(); ++i) {
     //for (auto& f : m_buildingsPtr) { // MSVC doesn't like range loops with OMP
         auto& b = m_buildingsPtr[i];
+        if (Config::get().flatTerrain) b->set_to_flat_terrain(Config::get().flatTerrainElevation);
         if (b->is_active()) this->reconstruct_one_building(b);
 
         if ((count % tenPercent) == 0)
@@ -469,13 +470,14 @@ void Map3d::reconstruct_with_flat_terrain() {
     for (auto& sl : m_surfaceLayersPtr) {
         sl->set_flat_borders(Config::get().flatTerrainElevation);
     }
-    //-- Account for zero terrain height of buildings
-    for (auto& b : m_buildingsPtr) {
-        if (!b->is_active()) continue; // skip failed reconstructions
-        b->set_to_flat_terrain(Config::get().flatTerrainElevation);
-    }
     //-- Set terrain point cloud to zero height
     m_pointCloud.set_flat_terrain(Config::get().flatTerrainElevation);
+
+    for (auto& b : m_boundariesPtr) {
+        b->set_flat_borders(Config::get().flatTerrainElevation);
+    }
+
+    //-- Buildings are already reconstructed with defined elevation
 }
 
 void Map3d::solve_building_conflicts() {
