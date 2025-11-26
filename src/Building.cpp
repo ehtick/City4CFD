@@ -284,9 +284,9 @@ void Building::set_to_flat_terrain(const double elevation) {
     const double avgElevation = geomutils::avg(avgRings);
     m_elevation = this->get_elevation() - avgElevation;
 
-    // lower every point by the defined elevation
+    // shift every point by the defined elevation
     for (auto& pt : m_ptsPtr->points()) {
-        pt = Point_3(pt.x(), pt.y(), pt.z() - elevation);
+        pt = Point_3(pt.x(), pt.y(), pt.z() - avgElevation + elevation);
     }
 
     this->set_flat_borders(elevation);
