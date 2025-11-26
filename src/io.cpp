@@ -139,7 +139,7 @@ void IO::read_polygons(std::string& file, PolyVecPtr& polygons, std::string* crs
         inputLayer->ResetReading();
 
         // Try to extract CRS from this layer
-        OGRSpatialReference *spatialRef = inputLayer->GetSpatialRef();
+        auto *spatialRef = inputLayer->GetSpatialRef();
         if (spatialRef != NULL) {
             std::string crsAuthority, crsCode;
             //      char *srs = (char *)CPLMalloc(10000*sizeof(char));
