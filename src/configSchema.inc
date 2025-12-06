@@ -306,6 +306,10 @@ namespace jsonschema {
           "description": "Optional: Force flat terrain",
           "type": "boolean"
         },
+        "flat_terrain_elevation": {
+          "description": "Optional: Elevation of the flat terrain",
+          "type": "number"
+        },
         "building_percentile": {
           "type": "number",
           "exclusiveMinimum": 0,

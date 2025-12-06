@@ -144,7 +144,7 @@ void PointCloud::terrain_points_in_polygon(BuildingsPtr& features) {
     pointCloud.collect_garbage();
 }
 
-void PointCloud::create_flat_terrain(const PolyFeaturesPtr& lsFeatures) {
+void PointCloud::create_flat_terrain(const PolyFeaturesPtr& lsFeatures, const double elevation) {
     std::cout << "\nCreating flat terrain" << std::endl;
     for (auto& f : lsFeatures) {
         if (f->get_poly().rings().empty()) {
@@ -152,15 +152,15 @@ void PointCloud::create_flat_terrain(const PolyFeaturesPtr& lsFeatures) {
             continue;
         }
         for (auto& pt : f->get_poly().outer_boundary()) {
-            m_pointCloudTerrain.insert(Point_3(pt.x(), pt.y(), 0.0));
+            m_pointCloudTerrain.insert(Point_3(pt.x(), pt.y(), elevation));
         }
     }
 }
 
-void PointCloud::set_flat_terrain() {
+void PointCloud::set_flat_terrain(const double elevation) {
     Point_set_3 flatPC;
     for (auto& pt : m_pointCloudTerrain.points()) {
-        flatPC.insert(Point_3(pt.x(), pt.y(), 0.));
+        flatPC.insert(Point_3(pt.x(), pt.y(), elevation));
     }
     m_pointCloudTerrain = flatPC;
 }

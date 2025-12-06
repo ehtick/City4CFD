@@ -43,7 +43,6 @@ public:
 
     virtual void   calc_elevation() = 0;
     virtual void   reconstruct() = 0;
-    virtual void   reconstruct_flat_terrain() = 0;
     virtual void   insert_terrain_point(const Point_3& pt) = 0;
 
     double get_elevation();
@@ -61,7 +60,7 @@ public:
     void   mark_as_failed();
     bool   has_failed_to_reconstruct() const;
     bool   has_self_intersections() const;
-    void   set_to_zero_terrain();
+    void   set_to_flat_terrain(const double elevation = 0.);
     double sq_max_dim();
     PointSet3Ptr get_points() const;
     std::string get_lod() const;

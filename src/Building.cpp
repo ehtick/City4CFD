@@ -274,15 +274,22 @@ bool Building::has_failed_to_reconstruct() const {
     return m_hasFailed;
 }
 
-void Building::set_to_zero_terrain() {
+void Building::set_to_flat_terrain(const double elevation) {
     //-- Get average footprint height
     std::vector<double> avgRings;
+    avgRings.reserve(m_groundElevations.size());
     for (auto& ring : m_groundElevations) {
         avgRings.emplace_back(geomutils::avg(ring));
     }
-    m_elevation = this->get_elevation() - geomutils::avg(avgRings);
-    this->set_zero_borders();
-    this->reconstruct_flat_terrain();
+    const double avgElevation = geomutils::avg(avgRings);
+    m_elevation = this->get_elevation() - avgElevation + elevation;
+
+    // shift every point by the defined elevation
+    for (auto& pt : m_ptsPtr->points()) {
+        pt = Point_3(pt.x(), pt.y(), pt.z() - avgElevation + elevation);
+    }
+
+    this->set_flat_borders(elevation);
 }
 
 double Building::sq_max_dim() {

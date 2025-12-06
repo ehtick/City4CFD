@@ -50,7 +50,7 @@ endif()
 include_directories(${GDAL_INCLUDE_DIR})
 
 # Eigen
-find_package(Eigen3 3.3.4)
+find_package(Eigen3 REQUIRED)
 include(${CMAKE_SOURCE_DIR}/thirdparty/CGAL/cmake/CGAL_Eigen3_support.cmake)
 
 # OpenMP

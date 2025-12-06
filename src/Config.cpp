@@ -259,6 +259,8 @@ void Config::set_config(nlohmann::json& j) {
     }
     if (j.contains("flat_terrain"))
         flatTerrain = j["flat_terrain"];
+    if (j.contains("flat_terrain_elevation"))
+        flatTerrainElevation = j["flat_terrain_elevation"];
 
     // Buildings
     if (j.contains("building_percentile"))
