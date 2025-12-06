@@ -35,10 +35,16 @@ LoD22::LoD22(roofer::Mesh rooferMesh) {
     this->shorten_mesh_edges(rooferMesh, sq_maxdist);
 
     // sort out the footprint back
-    this->get_footprint_from_mesh(rooferMesh, m_footprint, m_baseElevations);
+    this->make_footprint_from_mesh(rooferMesh, m_footprint, m_baseElevations);
 
     // sort out the mesh
+
+    if (Config::get().removeBottom) {
+        // remove bottom surface from rooferMesh
+        this->remove_footprint_from_mesh(rooferMesh);
+    }
     m_mesh = roofer::Mesh2CGALSurfaceMesh<Point_3>(rooferMesh);
+    m_rooferMeshes.push_back(rooferMesh);
 }
 
 void LoD22::reconstruct(const PointSet3Ptr& buildingPtsPtr,
@@ -96,17 +102,30 @@ void LoD22::reconstruct(const PointSet3Ptr& buildingPtsPtr,
                                                           .lod13_step_height = config.m_lod13_step_height});
 
     // store the first mesh from the vector, rest should be handled separately
-    auto rooferMesh = m_rooferMeshes.front();
+    auto& rooferMesh = m_rooferMeshes.front();
 
     // shorten long poly edges
     const double sq_maxdist = Config::get().edgeMaxLen * Config::get().edgeMaxLen;
     this->shorten_mesh_edges(rooferMesh, sq_maxdist);
 
     // sort out the footprint back
-    this->get_footprint_from_mesh(rooferMesh, m_footprint, m_baseElevations);
+    this->make_footprint_from_mesh(rooferMesh, m_footprint, m_baseElevations);
 
     // sort out the mesh
+    if (Config::get().removeBottom) {
+        // remove bottom surface from rooferMesh
+        this->remove_footprint_from_mesh(rooferMesh);
+    }
     m_mesh = roofer::Mesh2CGALSurfaceMesh<Point_3>(rooferMesh);
+}
+
+void LoD22::remove_footprint_from_mesh(roofer::Mesh& rooferMesh) {
+    // get the reference to the footprint
+    auto& rooferNewFootprint = this->get_footprint_from_mesh(rooferMesh);
+    // remove bottom surface from rooferMesh
+    if (Config::get().removeBottom) {
+        rooferNewFootprint = roofer::LinearRing();
+    }
 }
 
 void LoD22::shorten_mesh_edges(roofer::Mesh& roofer_mesh, const double sq_maxdist) const {
@@ -140,19 +159,32 @@ void LoD22::shorten_mesh_edges(roofer::Mesh& roofer_mesh, const double sq_maxdis
     }
 }
 
-void LoD22::get_footprint_from_mesh(const roofer::Mesh& rooferMesh, Polygon_with_holes_2& footprint,
-                                    std::vector<std::vector<double>>& baseElevations) const {
-    footprint.rings().clear();
-    baseElevations.clear();
+roofer::LinearRing& LoD22::get_footprint_from_mesh(roofer::Mesh& rooferMesh) {
     auto labels = rooferMesh.get_labels();
-    roofer::LinearRing rooferNewFootprint;
     for (int i = 0; i != labels.size(); ++i) {
         if (labels[i] == 0) {
-            rooferNewFootprint = rooferMesh.get_polygons()[i];
-            break;
+            return rooferMesh.get_polygons()[i];
         }
-        throw city4cfd_error("No footprint found in the reconstructed mesh!");
     }
+    throw city4cfd_error("No footprint found in the reconstructed mesh!");
+}
+
+const roofer::LinearRing& LoD22::get_footprint_from_mesh(const roofer::Mesh& rooferMesh) const {
+    auto labels = rooferMesh.get_labels();
+    for (int i = 0; i != labels.size(); ++i) {
+        if (labels[i] == 0) {
+            return rooferMesh.get_polygons()[i];
+        }
+    }
+    throw city4cfd_error("No footprint found in the reconstructed mesh!");
+}
+
+void LoD22::make_footprint_from_mesh(roofer::Mesh& rooferMesh, Polygon_with_holes_2& footprint,
+                                    std::vector<std::vector<double>>& baseElevations) const {
+    auto rooferNewFootprint = this->get_footprint_from_mesh(rooferMesh);
+
+    footprint.rings().clear();
+    baseElevations.clear();
     Polygon_2 poly2;
     std::vector<double> outerBaseElevations;
     for (auto& p: rooferNewFootprint) {
@@ -175,6 +207,7 @@ void LoD22::get_footprint_from_mesh(const roofer::Mesh& rooferMesh, Polygon_with
     CGAL::Polygon_with_holes_2<EPICK> newFootprint = CGAL::Polygon_with_holes_2<EPICK>(poly2, holes.begin(),
                                                                                        holes.end());
     footprint = Polygon_with_holes_2(newFootprint);
+
 }
 
 Polygon_with_holes_2 LoD22::get_footprint() const {

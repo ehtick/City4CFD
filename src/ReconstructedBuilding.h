@@ -46,7 +46,6 @@ public:
     virtual void   calc_elevation() override;
     virtual void   reconstruct() override;
     virtual void   insert_terrain_point(const Point_3& pt) override;
-    virtual void   reconstruct_flat_terrain() override;
     virtual void   get_cityjson_semantics(nlohmann::json& g) const override;
 
 protected:
@@ -58,6 +57,7 @@ protected:
     void reconstruct_from_attribute();
     bool reconstruct_again_from_attribute(const std::string& reason);
     void reconstruct_lod12();
+    bool is_bottom_surface(const Mesh& mesh, const Mesh::halfedge_index h);
 };
 
 

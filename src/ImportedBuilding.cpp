@@ -291,9 +291,6 @@ void ImportedBuilding::reconstruct() {
     nlohmann::json& geometry = (*m_buildingJson)["geometry"][m_lodIdx];
 
     m_mesh.clear();
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(-5);
-    }
     //-- Adjust building height points
     if (!m_trueHeight || Config::get().ground_xyz.empty()) {
         Vector_3 movePt(0, 0, this->ground_elevation());
@@ -320,14 +317,12 @@ void ImportedBuilding::reconstruct() {
     //-- Add points to mesh
     std::vector<std::array<FT, 3>> points;
     std::vector<CGAL_Polygon> polygons;
-//    int surfIdx = -1;
+    int surfIdx = -1;
     for (auto& faces : geometry["boundaries"].front()) {
-        /*
-        //-- Remove bottom surface
         ++surfIdx;
-        if (std::find(m_footprintIdxList.begin(), m_footprintIdxList.end(), surfIdx) != m_footprintIdxList.end())
+        if (Config::get().removeBottom &&
+                std::find(m_footprintIdxList.begin(), m_footprintIdxList.end(), surfIdx) != m_footprintIdxList.end())
             continue;
-        */
 
         for (auto& faceLst : faces) {
             CGAL_Polygon p;
@@ -372,9 +367,6 @@ void ImportedBuilding::reconstruct() {
     m_mesh = wrap;
      */
 
-    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
-        this->translate_footprint(5);
-    }
         /*
         //-- Add other surfaces
         std::vector<Mesh::Vertex_index> faceVertices;
@@ -403,12 +395,9 @@ void ImportedBuilding::reconstruct() {
     PMP::triangulate_faces(m_mesh);
     */
     if (Config::get().refineImported) this->refine();
-}
-
-void ImportedBuilding::reconstruct_flat_terrain() {
-    m_trueHeight = false;
-    m_groundElevation = 0;
-    this->reconstruct();
+    if (m_clipBottom || Config::get().intersectBuildingsTerrain) {
+        this->force_building_terrain_intersection(5);
+    }
 }
 
 void ImportedBuilding::append_nonground_part(const std::shared_ptr<ImportedBuilding>& other) {

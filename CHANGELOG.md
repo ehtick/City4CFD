@@ -1,4 +1,15 @@
 # Changelog
+## [0.7.0] 2025-12-06
+### Added
+- A script to fetch polygons (building, water, vegetation) from OSM
+- An option to remove bottom surfaces at the terrain-building intersection
+- A parameter to set ground elevation when forcing a flat terrain
+### Changed
+- Influence region and domain boundaries support all formats for polygon input
+- Buildings that intersect terrain now have flat footprints
+### Fixed
+- Issues with flat terrain - terrain flattening code rewritten
+
 ## [0.6.3] 2025-03-07
 ### Fixed
 - CityJSON terrain output

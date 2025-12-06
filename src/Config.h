@@ -80,7 +80,9 @@ public:
     int       nSmoothIterations                 = 0;
     int       maxSmoothPts                      = -9999;
     bool      flatTerrain                       = false;
+    double    flatTerrainElevation              = 0.;
     bool      intersectBuildingsTerrain         = false;
+    bool      removeBottom                      = false;
 
     //- Buildings
     std::string buildingUniqueId;

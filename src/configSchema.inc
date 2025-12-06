@@ -306,6 +306,10 @@ namespace jsonschema {
           "description": "Optional: Force flat terrain",
           "type": "boolean"
         },
+        "flat_terrain_elevation": {
+          "description": "Optional: Elevation of the flat terrain",
+          "type": "number"
+        },
         "building_percentile": {
           "type": "number",
           "exclusiveMinimum": 0,
@@ -327,6 +331,10 @@ namespace jsonschema {
         },
         "intersect_buildings_terrain": {
           "description": "Optional: Force buildings to protrude through terrain",
+          "type": "boolean"
+        },
+        "remove_bottom": {
+          "description": "Optional: Remove bottom surfaces of buildings and the terrain below them",
           "type": "boolean"
         },
         "reconstruct_boundaries": {

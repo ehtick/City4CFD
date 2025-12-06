@@ -193,22 +193,44 @@ void Building::alpha_wrap(double relativeAlpha, double relativeOffset) {
     CGAL::alpha_wrap_3(m_mesh, alpha, offset, m_mesh);
 }
 
-void Building::translate_footprint(const double h) {
-    for (auto& ring : m_groundElevations) {
-        for (auto& pt : ring) {
-            pt += h;
+/*
+ * Ensure that mesh extrudes through the ground
+ */
+void Building::force_building_terrain_intersection(const double h) {
+    double minElevation = global::largnum;
+    std::unordered_set<vertex_descriptor> bottomVertices; // store vertex indices ones
+    for (const auto f : m_mesh.faces()) {
+        auto normal = PMP::compute_face_normal(f, m_mesh);
+        if (normal.z() < - 0.1) { // look at downward-facing faces
+            // store the vertices and calculate min point height
+            for (const auto v : m_mesh.vertices_around_face(m_mesh.halfedge(f))) {
+                bottomVertices.insert(v);
+                auto pt = m_mesh.point(v);
+                if (pt.z() < minElevation) {
+                    minElevation = pt.z();
+                }
+            }
         }
+    }
+    // set the elevation of ground vertices to the lowest point minus distance
+    for (const auto v : bottomVertices) {
+        auto pt = m_mesh.point(v);
+        m_mesh.point(v) = Point_3(pt.x(), pt.y(), minElevation - h);
     }
 }
 
-// Store the reconstruction settings for a defined reconstruction (influence) region
+/*
+ * Store the reconstruction settings for a defined reconstruction (influence) region
+*/
 void Building::set_reconstruction_rules(const BoundingRegion& reconRegion) {
     m_reconSettings = reconRegion.m_reconSettings;
     // set the output layer ID
     m_outputLayerID = m_reconSettings->outputLayerID;
 }
 
-// Remove stored reconstruction settings
+/*
+ * Remove stored reconstruction settings
+*/
 void Building::remove_reconstruction_rules() {
     m_reconSettings.reset();
     m_outputLayerID = 0;
@@ -252,15 +274,22 @@ bool Building::has_failed_to_reconstruct() const {
     return m_hasFailed;
 }
 
-void Building::set_to_zero_terrain() {
+void Building::set_to_flat_terrain(const double elevation) {
     //-- Get average footprint height
     std::vector<double> avgRings;
+    avgRings.reserve(m_groundElevations.size());
     for (auto& ring : m_groundElevations) {
         avgRings.emplace_back(geomutils::avg(ring));
     }
-    m_elevation = this->get_elevation() - geomutils::avg(avgRings);
-    this->set_zero_borders();
-    this->reconstruct_flat_terrain();
+    const double avgElevation = geomutils::avg(avgRings);
+    m_elevation = this->get_elevation() - avgElevation + elevation;
+
+    // shift every point by the defined elevation
+    for (auto& pt : m_ptsPtr->points()) {
+        pt = Point_3(pt.x(), pt.y(), pt.z() - avgElevation + elevation);
+    }
+
+    this->set_flat_borders(elevation);
 }
 
 double Building::sq_max_dim() {

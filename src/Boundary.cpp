@@ -88,6 +88,12 @@ void Boundary::set_bounds_to_terrain_pc(Point_set_3& pointCloud, const Polygon_2
     //-- Remove points out of the boundary region
     Boundary::set_bounds_to_buildings_pc(pointCloud, pcBndPoly);
 
+    // check if there are any points left in the terrain
+    if (pointCloud.empty()) {
+        throw city4cfd_error("All terrain points are out of domain bounds! "
+                             "Check if your terrain points are aligned with polygons.");
+    }
+
     std::vector<double> bndHeights;
     geomutils::interpolate_poly_from_pc(bndPoly, bndHeights, pointCloud);
     s_outerBndHeight = geomutils::avg(bndHeights); // Height for buffer (for now) - average of outer pts
@@ -100,17 +106,27 @@ void Boundary::set_bounds_to_terrain_pc(Point_set_3& pointCloud, const Polygon_2
         }
          */
         for (auto& pt : bndPoly) {
-            s_outerPts.emplace_back(Point_3(pt.x(), pt.y(), s_outerBndHeight));
+            s_outerPts.emplace_back(pt.x(), pt.y(), s_outerBndHeight);
             pointCloud.insert(s_outerPts.back());
         }
     } else {
         int i = 0;
         for (auto& pt : bndPoly) {
-            s_outerPts.emplace_back(Point_3(pt.x(), pt.y(), bndHeights[i++]));
+            s_outerPts.emplace_back(pt.x(), pt.y(), bndHeights[i++]);
             pointCloud.insert(s_outerPts.back());
         }
     }
     s_outerPts.push_back(s_outerPts.front());
+}
+
+void Boundary::set_flat_borders(const double elevation) {
+    //-- Just set static variables to flat elevation, prep_output() will
+    // take care of the rest
+    s_outerBndHeight = elevation;
+    for (auto& pt : s_outerPts) {
+        pt = Point_3(pt.x(), pt.y(), elevation);
+    }
+    Config::get().logSummary << "Domain edge elevation overwritten to: " << s_outerBndHeight << std::endl;
 }
 
 void Boundary::prep_output() {

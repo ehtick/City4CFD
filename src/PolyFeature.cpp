@@ -363,10 +363,10 @@ bool PolyFeature::flatten_polygon_inner_points(const Point_set_3& pointCloud,
     return true;
 }
 
-void PolyFeature::set_zero_borders() {
+void PolyFeature::set_flat_borders(const double elevation) {
     for (auto& ring : m_groundElevations) {
         for (auto& pt : ring) {
-            pt = 0.;
+            pt = elevation;
         }
     }
 }

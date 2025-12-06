@@ -126,7 +126,7 @@ void PointCloud::terrain_points_in_polygon(BuildingsPtr& features) {
         auto poly = f->get_poly().get_cgal_type();
 //        const double offset = 1.; // offset hardcoded
 //        auto offsetPoly = geomutils::offset_polygon_geos(poly, offset);
-        auto& offsetPoly = poly; // temp
+        auto& offsetPoly = poly; // temp until terrain is included in buildings
 
         std::vector<Point_index*> intersected_nodes;
         pointCloudIndex.find_intersections(intersected_nodes, offsetPoly.bbox().xmin(), offsetPoly.bbox().xmax(),
@@ -144,7 +144,7 @@ void PointCloud::terrain_points_in_polygon(BuildingsPtr& features) {
     pointCloud.collect_garbage();
 }
 
-void PointCloud::create_flat_terrain(const PolyFeaturesPtr& lsFeatures) {
+void PointCloud::create_flat_terrain(const PolyFeaturesPtr& lsFeatures, const double elevation) {
     std::cout << "\nCreating flat terrain" << std::endl;
     for (auto& f : lsFeatures) {
         if (f->get_poly().rings().empty()) {
@@ -152,15 +152,15 @@ void PointCloud::create_flat_terrain(const PolyFeaturesPtr& lsFeatures) {
             continue;
         }
         for (auto& pt : f->get_poly().outer_boundary()) {
-            m_pointCloudTerrain.insert(Point_3(pt.x(), pt.y(), 0.0));
+            m_pointCloudTerrain.insert(Point_3(pt.x(), pt.y(), elevation));
         }
     }
 }
 
-void PointCloud::set_flat_terrain() {
+void PointCloud::set_flat_terrain(const double elevation) {
     Point_set_3 flatPC;
     for (auto& pt : m_pointCloudTerrain.points()) {
-        flatPC.insert(Point_3(pt.x(), pt.y(), 0.));
+        flatPC.insert(Point_3(pt.x(), pt.y(), elevation));
     }
     m_pointCloudTerrain = flatPC;
 }
@@ -346,7 +346,7 @@ void PointCloud::read_point_clouds() {
     if (!Config::get().buildings_xyz.empty()) {
         std::cout << "Reading building points" << std::endl;
         IO::read_point_cloud(Config::get().buildings_xyz, m_pointCloudBuildings);
-        if (m_pointCloudBuildings.empty()) throw std::invalid_argument("Didn't find any building points!");
+        if (m_pointCloudBuildings.empty()) throw city4cfd_error("Didn't find any building points!");
 
         std::cout << "    Points read: " << m_pointCloudBuildings.size() << std::endl;
     }
