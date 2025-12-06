@@ -42,11 +42,13 @@ You can directly compile City4CFD on your system using cmake, run it through a D
 ### Build from source
 The following libraries are required to build the project:
 - [CGAL](https://www.cgal.org/) >= 6.0.1
-- Boost >= 1.66
-- Eigen >= 3.3.4
-- GMP >= 4.2
-- MPFR >= 2.2.1
+- Boost >= 1.72
+- Eigen >= 3.3.7
+- GMP >= 5.0.1
+- MPFR >= 3.0.0
 - GDAL >= 3.0
+
+Also make sure your compiler versions satisfy CGAL version requirements ([example for 6.0.2](https://doc.cgal.org/6.0.2/Manual/thirdparty.html))
 
 *OpenMP* is an optional dependency.
 
