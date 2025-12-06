@@ -1,5 +1,5 @@
 # Changelog
-## [Unreleased]
+## [0.7.0] 2025-12-06
 ### Added
 - A script to fetch polygons (building, water, vegetation) from OSM
 - An option to remove bottom surfaces at the terrain-building intersection
