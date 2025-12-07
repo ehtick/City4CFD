@@ -108,7 +108,7 @@ ReconstructedBuilding::ReconstructedBuilding(const Polygon_with_attr& poly)
     if (buildingHeightAttrIt != poly.attributes.end()) {
         m_attributeHeight = std::stod(buildingHeightAttrIt->second);
     } else if (numFloorsAttrIt != poly.attributes.end()) { // Check for the number of floors attribute
-        m_attributeHeight = std::stod(numFloorsAttrIt->second) * Config()::get().floorHeight;
+        m_attributeHeight = std::stod(numFloorsAttrIt->second) * Config::get().floorHeight;
     }
     if (!this->is_active()) { // It can only fail if the polygon is not simple
         this->mark_as_failed();
