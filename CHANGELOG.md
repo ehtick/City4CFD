@@ -1,4 +1,8 @@
 # Changelog
+## [0.7.1] 2025-12-14
+### Fixed
+- Minor bugfixes
+
 ## [0.7.0] 2025-12-06
 ### Added
 - A script to fetch polygons (building, water, vegetation) from OSM
