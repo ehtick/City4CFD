@@ -52,7 +52,7 @@ void printWelcome() {
     };
 
     std::cout << logo;
-    std::cout << "City4CFD Copyright (C) 2021-2025 3D Geoinformation Research Group, TU Delft\n" << std::endl;
+    std::cout << "City4CFD Copyright (C) 2021-2026 3D Geoinformation Research Group, TU Delft\n" << std::endl;
 }
 
 void printHelp() {
