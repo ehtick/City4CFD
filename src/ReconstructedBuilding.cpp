@@ -31,6 +31,12 @@
 #include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 #include <CGAL/Polygon_mesh_processing/polygon_mesh_to_polygon_soup.h>
 #include <CGAL/Polygon_mesh_processing/compute_normal.h>
+#if CGAL_VERSION_NR >= 1060201000 // 6.2.0 -- extract_boundary_cycles() moved from PMP:: to CGAL:: namespace,
+                                  // header moved to CGAL/boost/graph/border.h
+#include <CGAL/boost/graph/border.h>
+#else
+#include <CGAL/Polygon_mesh_processing/border.h>
+#endif
 
 ReconstructedBuilding::ReconstructedBuilding()
         : Building(), m_attributeHeight(-global::largnum),
@@ -262,7 +268,11 @@ void ReconstructedBuilding::reconstruct() {
                 // collect boundary halfedges
                 typedef boost::graph_traits<Mesh>::halfedge_descriptor halfedge_descriptor;
                 std::vector<halfedge_descriptor> borderCycles;
+#if CGAL_VERSION_NR >= 1060201000 // 6.2.0
+                CGAL::extract_boundary_cycles(mesh, std::back_inserter(borderCycles));
+#else
                 PMP::extract_boundary_cycles(mesh, std::back_inserter(borderCycles));
+#endif
                 // fill using boundary halfedges
                 for(halfedge_descriptor h : borderCycles) {
                     // don't triangulate the removed bottom in case of remove_bottom
