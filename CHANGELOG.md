@@ -1,4 +1,8 @@
 # Changelog
+## [0.8.1] 2026-07-26
+### Fixed
+- CGAL 6.2 compatibility issues
+
 ## [0.8.0] 2026-04-06
 ### Added
 - `output_buildings_separately` parameter that outputs every building as an individual file
