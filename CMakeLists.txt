@@ -96,4 +96,8 @@ target_link_libraries(city4cfd
         ${OpenMP_support}
         )
 
+# CGAL >= 6.2 requires CGAL_LINKED_WITH_LASLIB to be defined to enable CGAL::IO::read_LAS();
+# City4CFD already bundles and links against LASlib, so just flag it as available.
+target_compile_definitions(city4cfd PRIVATE CGAL_LINKED_WITH_LASLIB)
+
 install(TARGETS city4cfd DESTINATION bin)
